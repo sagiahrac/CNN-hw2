@@ -33,7 +33,13 @@ class MLP(Block):
 
         # TODO: Build the MLP architecture as described.
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        
+        activation = Sigmoid if activation=='sigmoid' else ReLU
+        feature_sizes = [in_features] + list(hidden_features)
+        for i in range(len(feature_sizes)-1):
+            blocks.append(Linear(feature_sizes[i], feature_sizes[i+1]))
+            blocks.append(activation())
+        blocks.append(Linear(feature_sizes[-1], num_classes))
         # ========================
 
         self.sequence = Sequential(*blocks)
@@ -129,6 +135,6 @@ class YourCodeNet(ConvClassifier):
     # For example, add batchnorm, dropout, skip connections, change conv
     # filter sizes etc.
     # ====== YOUR CODE: ======
-    raise NotImplementedError()
+    # raise NotImplementedError()
     # ========================
 

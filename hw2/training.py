@@ -188,7 +188,12 @@ class BlocksTrainer(Trainer):
         # - Optimize params
         # - Calculate number of correct predictions
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        scores = self.model.forward(X)
+        loss = self.loss_fn(scores, y)
+        loss_grad = self.loss_fn.backward()
+        self.model.backward(loss_grad)
+        self.optimizer.step()
+        num_correct = torch.sum((torch.argmax(scores, dim=1) == y)*1)
         # ========================
 
         return BatchResult(loss, num_correct)

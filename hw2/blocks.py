@@ -75,7 +75,9 @@ class Linear(Block):
         # TODO: Create the weight matrix (w) and bias vector (b).
 
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        
+        self.w = torch.randn(out_features, in_features)*wstd
+        self.b = torch.randn(out_features)*wstd
         # ========================
 
         self.dw = torch.zeros_like(self.w)
@@ -100,7 +102,7 @@ class Linear(Block):
         # TODO: Compute the affine transform
 
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        out = x @ self.w.T + self.b
         # ========================
 
         self.grad_cache['x'] = x
@@ -119,7 +121,9 @@ class Linear(Block):
         #   - db, the gradient of the loss with respect to b
         # You should accumulate gradients in dw and db.
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        self.dw += dout.T @ x
+        self.db += torch.sum(dout, dim=0)
+        dx = dout @ self.w
         # ========================
 
         return dx
@@ -145,7 +149,7 @@ class ReLU(Block):
 
         # TODO: Implement the ReLU operation.
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        out = (x > 0) * x     # torch.relu(x)
         # ========================
 
         self.grad_cache['x'] = x
@@ -160,7 +164,7 @@ class ReLU(Block):
 
         # TODO: Implement gradient w.r.t. the input x
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        dx = (x > 0) * dout
         # ========================
 
         return dx
@@ -190,7 +194,8 @@ class Sigmoid(Block):
         # TODO: Implement the Sigmoid function. Save whatever you need into
         # grad_cache.
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        out = 1/(1+torch.exp(-x))
+        self.grad_cache['sigmoid_out'] = out.clone()
         # ========================
 
         return out
@@ -203,7 +208,8 @@ class Sigmoid(Block):
 
         # TODO: Implement gradient w.r.t. the input x
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        sigmoid_out = self.grad_cache['sigmoid_out']
+        dx = sigmoid_out * (1-sigmoid_out) * dout
         # ========================
 
         return dx
@@ -247,7 +253,8 @@ class CrossEntropyLoss(Block):
         # Tip: to get a different column from each row of a matrix tensor m,
         # you can index it with m[range(num_rows), list_of_cols].
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        x_true = x[range(N), y]
+        loss = torch.mean(torch.log(torch.sum(torch.exp(x), dim=1)) - x_true)
         # ========================
 
         self.grad_cache['x'] = x
@@ -266,7 +273,10 @@ class CrossEntropyLoss(Block):
 
         # TODO: Calculate the gradient w.r.t. the input x
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        c = 1/torch.sum(torch.exp(x), dim=1).reshape((N,1))
+        dx = (torch.exp(x) * c)
+        dx[range(N), y] -= 1
+        dx = dx * dout / N
         # ========================
 
         return dx
@@ -324,7 +334,9 @@ class Sequential(Block):
         # TODO: Implement the forward pass by passing each block's output
         # as the input of the next.
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        out = x
+        for block in self.blocks:
+            out = block(out, **kw)
         # ========================
 
         return out
@@ -336,7 +348,9 @@ class Sequential(Block):
         # Each block's input gradient should be the previous block's output
         # gradient. Behold the backpropagation algorithm in action!
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        for block in reversed(self.blocks):
+            din = block.backward(dout)
+            dout = din
         # ========================
 
         return din
@@ -346,7 +360,8 @@ class Sequential(Block):
 
         # TODO: Return the parameter tuples from all blocks.
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        for block in self.blocks:
+            params += block.params()
         # ========================
 
         return params
