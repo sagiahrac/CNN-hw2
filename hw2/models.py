@@ -39,6 +39,8 @@ class MLP(Block):
         for i in range(len(feature_sizes)-1):
             blocks.append(Linear(feature_sizes[i], feature_sizes[i+1]))
             blocks.append(activation())
+            if dropout != 0:
+                blocks.append(Dropout(dropout))
         blocks.append(Linear(feature_sizes[-1], num_classes))
         # ========================
 
