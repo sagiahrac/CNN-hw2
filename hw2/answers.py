@@ -58,15 +58,11 @@ An equation: $e^{i\pi} -1 = 0$
 """
 
 part2_q2 = r"""
-**Your answer:**
+Yes, it is possible. The relationship between loss and accuracy is not straightforward.
 
 
-Write your answer using **markdown** and $\LaTeX$:
-```python
-# A code block
-a = 2
-```
-An equation: $e^{i\pi} -1 = 0$
+
+
 
 """
 # ==============

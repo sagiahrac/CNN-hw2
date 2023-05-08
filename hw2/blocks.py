@@ -149,7 +149,8 @@ class ReLU(Block):
 
         # TODO: Implement the ReLU operation.
         # ====== YOUR CODE: ======
-        out = (x > 0) * x     # torch.relu(x)
+        # out = (x > 0) * x
+        out = torch.relu(x)
         # ========================
 
         self.grad_cache['x'] = x
@@ -194,8 +195,9 @@ class Sigmoid(Block):
         # TODO: Implement the Sigmoid function. Save whatever you need into
         # grad_cache.
         # ====== YOUR CODE: ======
-        out = 1/(1+torch.exp(-x))
-        self.grad_cache['sigmoid_out'] = out.clone()
+        # out = 1/(1+torch.exp(-x))
+        out = torch.nn.functional.sigmoid(x)
+        self.grad_cache['sigmoid_out'] = out
         # ========================
 
         return out
@@ -253,8 +255,9 @@ class CrossEntropyLoss(Block):
         # Tip: to get a different column from each row of a matrix tensor m,
         # you can index it with m[range(num_rows), list_of_cols].
         # ====== YOUR CODE: ======
-        x_true = x[range(N), y]
-        loss = torch.mean(torch.log(torch.sum(torch.exp(x), dim=1)) - x_true)
+        # x_true = x[range(N), y]
+        # loss = torch.mean(torch.log(torch.sum(torch.exp(x), dim=1)) - x_true)
+        loss = torch.nn.functional.cross_entropy(input=x, target=y)
         # ========================
 
         self.grad_cache['x'] = x

@@ -1,6 +1,7 @@
 import abc
 import torch
 from torch import Tensor
+from collections import deque
 
 
 class Optimizer(abc.ABC):
@@ -91,7 +92,7 @@ class MomentumSGD(Optimizer):
 
         # TODO: Add your own initializations as needed.
         # ====== YOUR CODE: ======
-        self.v = []
+        self.v = deque()
         for p, dp in self.params:
             if dp is None:
                 continue
@@ -108,10 +109,9 @@ class MomentumSGD(Optimizer):
             # to include the regularization term.
             # ====== YOUR CODE: ======
             dp += self.reg * p
-            v = self.v.pop(0)
-            v = self.momentum * v - self.learn_rate * dp
-            p += v
-            self.v.append(v)
+            self.v[0] = self.momentum * self.v[0] + dp
+            p -= self.learn_rate * self.v[0]
+            self.v.rotate(-1)
             # ========================
 
 
@@ -132,7 +132,7 @@ class RMSProp(Optimizer):
 
         # TODO: Add your own initializations as needed.
         # ====== YOUR CODE: ======
-        self.r = []
+        self.r = deque()
         for p, dp in self.params:
             if dp is None:
                 continue
@@ -150,8 +150,7 @@ class RMSProp(Optimizer):
             # parameters tensor.
             # ====== YOUR CODE: ======
             dp += self.reg * p
-            r = self.r.pop(0)
-            r = self.decay * r + (1 - self.decay) * (dp**2)
-            p -= (self.learn_rate / torch.sqrt(r + self.eps)) * dp
-            self.r.append(r)
+            self.r[0] = self.decay * self.r[0] + (1 - self.decay) * (dp**2)
+            p -= (self.learn_rate / torch.sqrt(self.r[0] + self.eps)) * dp
+            self.r.rotate(-1)
             # ========================
