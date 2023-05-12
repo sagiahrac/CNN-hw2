@@ -98,7 +98,16 @@ class ConvClassifier(nn.Module):
         # Use only dimension-preserving 3x3 convolutions. Apply 2x2 Max
         # Pooling to reduce dimensions.
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        filters = self.filters.copy()
+        N = len(filters)
+        P = self.pool_every
+        for pool_layer in range(N//P):
+            for conv_layer in range(P):
+                out_channels = filters.pop(0)
+                layers += [nn.Conv2d(in_channels, out_channels, kernel_size=3, padding=1), 
+                           nn.ReLU(inplace=True)]
+                in_channels = out_channels
+            layers += [nn.MaxPool2d(kernel_size=2)]
 
         # ========================
         seq = nn.Sequential(*layers)
@@ -113,7 +122,17 @@ class ConvClassifier(nn.Module):
         # You'll need to calculate the number of features first.
         # The last Linear layer should have an output dimension of out_classes.
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        N = len(self.filters)
+        P = self.pool_every
+        w = in_w >> (N//P)
+        h = in_h >> (N//P)
+        in_features = w*h*self.filters[-1]
+        
+        for out_features in self.hidden_dims:
+            layers += [nn.Linear(in_features, out_features),
+                       nn.ReLU(inplace=True)]
+            in_features = out_features
+        layers += [nn.Linear(in_features, self.out_classes)]
         # ========================
         seq = nn.Sequential(*layers)
         return seq
@@ -123,7 +142,9 @@ class ConvClassifier(nn.Module):
         # Extract features from the input, run the classifier on them and
         # return class scores.
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        x = self.feature_extractor(x)
+        x = x.view(x.size(0), -1)
+        out = self.classifier(x)
         # ========================
         return out
 

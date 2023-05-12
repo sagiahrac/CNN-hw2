@@ -29,7 +29,7 @@ def part2_optim_hp(opt_name):
     if opt_name == 'momentum':
         wstd, lr, reg = 0.01, 0.1, 0.0001
     if opt_name == 'rmsprop':
-        wstd, lr, reg = 0.01, 0.1, 0.0001
+        wstd, lr, reg = 0.01, 0.001, 0.00001
     # ========================
     return dict(wstd=wstd, lr=lr, reg=reg)
 
@@ -39,8 +39,9 @@ def part2_dropout_hp():
     # TODO: Tweak the hyperparameters to get the model to overfit without
     # dropout.
     # ====== YOUR CODE: ======
-    wstd, lr = 0.01, 0.1
+    wstd, lr = 0.1, 0.0001
     # ========================
+    print(dict(wstd=wstd, lr=lr))
     return dict(wstd=wstd, lr=lr)
 
 

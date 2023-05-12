@@ -238,7 +238,13 @@ class TorchTrainer(Trainer):
         # - Optimize params
         # - Calculate number of correct predictions
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        self.optimizer.zero_grad()
+        scores = self.model(X)
+        loss = self.loss_fn(scores, y)
+        loss.backward()
+        self.optimizer.step()
+        
+        num_correct = torch.sum((torch.argmax(scores, dim=1) == y))
         # ========================
 
         return BatchResult(loss, num_correct)
@@ -254,7 +260,10 @@ class TorchTrainer(Trainer):
             # - Forward pass
             # - Calculate number of correct predictions
             # ====== YOUR CODE: ======
-            raise NotImplementedError()
+            scores = self.model(X)
+            loss = self.loss_fn(scores, y)
+            
+            num_correct = torch.sum((torch.argmax(scores, dim=1) == y))
             # ========================
 
         return BatchResult(loss, num_correct)
