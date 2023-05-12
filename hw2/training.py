@@ -55,8 +55,10 @@ class Trainer(abc.ABC):
         actual_num_epochs = 0
         train_loss, train_acc, test_loss, test_acc = [], [], [], []
 
-        best_acc = None
+        best_acc = 0
         epochs_without_improvement = 0
+        prev_loss = float("inf")
+        max_batches = kw.get('max_batches', None)
 
         for epoch in range(num_epochs):
             verbose = False  # pass this to train/test_epoch.
@@ -72,12 +74,34 @@ class Trainer(abc.ABC):
             # - Optional: Implement early stopping. This is a very useful and
             #   simple regularization technique that is highly recommended.
             # ====== YOUR CODE: ======
-            epoch_result_train = self.train_epoch(dl_train)
-            epoch_result_test = self.test_epoch(dl_test)
-            train_loss += epoch_result_train.losses
-            train_acc.append(epoch_result_train.accuracy)
-            test_loss += epoch_result_test.losses
-            test_acc.append(epoch_result_test.accuracy)
+            actual_num_epochs += 1
+            epoch_result_train = self.train_epoch(dl_train, max_batches=max_batches)
+            epoch_result_test = self.test_epoch(dl_test, max_batches=max_batches)
+            train_loss += [x.item() for x in epoch_result_train.losses]
+            train_acc.append(epoch_result_train.accuracy.item())
+            test_loss += [x.item() for x in epoch_result_test.losses]
+            test_acc.append(epoch_result_test.accuracy.item())
+
+            if checkpoints is not None and best_acc < epoch_result_test.accuracy:
+                best_acc = epoch_result_test.accuracy
+                torch.save({
+                    'epoch': epoch,
+                    'model_state_dict': self.model.state_dict(),
+                    'optimizer_state_dict': self.optimizer.state_dict(),
+                    'train_loss': sum(epoch_result_train.losses) / len(epoch_result_train.losses),
+                    'test_loss': sum(epoch_result_test.losses) / len(epoch_result_test.losses),
+                    'train_accuracy': epoch_result_train.accuracy,
+                    'test_accuracy': epoch_result_test.accuracy
+                    }, f'saved_models/{checkpoints}')
+                
+            if early_stopping is not None:
+                curr_loss = sum(epoch_result_test.losses) / len(epoch_result_test.losses)
+                if curr_loss >= prev_loss:
+                    epochs_without_improvement += 1
+                else:
+                    epochs_without_improvement = 0
+                if epochs_without_improvement == early_stopping:
+                    break
             # ========================
 
         return FitResult(actual_num_epochs,
