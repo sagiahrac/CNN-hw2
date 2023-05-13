@@ -158,6 +158,22 @@ class YourCodeNet(ConvClassifier):
     # For example, add batchnorm, dropout, skip connections, change conv
     # filter sizes etc.
     # ====== YOUR CODE: ======
-    # raise NotImplementedError()
+    def _make_feature_extractor(self):
+        in_channels, in_h, in_w, = tuple(self.in_size)
+
+        layers = []
+        filters = self.filters.copy()
+        N = len(filters)
+        P = self.pool_every
+        for pool_layer in range(N//P):
+            for conv_layer in range(P):
+                out_channels = filters.pop(0)
+                layers += [nn.Conv2d(in_channels, out_channels, kernel_size=3, padding=1), 
+                           nn.ReLU(inplace=True),
+                           nn.Dropout2d(p=0.5)]
+                in_channels = out_channels
+            layers += [nn.MaxPool2d(kernel_size=2)]
+        seq = nn.Sequential(*layers)
+        return seq
     # ========================
 
