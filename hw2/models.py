@@ -168,11 +168,36 @@ class YourCodeNet(ConvClassifier):
         for pool_layer in range(N//P):
             for conv_layer in range(P):
                 out_channels = filters.pop(0)
-                layers += [nn.Conv2d(in_channels, out_channels, kernel_size=3, padding=1), 
+                layers += [nn.Conv2d(in_channels, out_channels, kernel_size=3, padding=1),
                            nn.ReLU(inplace=True),
-                           nn.Dropout2d(p=0.5)]
+                           nn.BatchNorm2d(out_channels)]
                 in_channels = out_channels
-            layers += [nn.MaxPool2d(kernel_size=2)]
+            layers += [nn.MaxPool2d(kernel_size=2),
+                       nn.Dropout2d(p=0.5)]
+        seq = nn.Sequential(*layers)
+        return seq
+    
+    def _make_classifier(self):
+        in_channels, in_h, in_w, = tuple(self.in_size)
+
+        layers = []
+        # TODO: Create the classifier part of the model:
+        # (Linear -> ReLU)*M -> Linear
+        # You'll need to calculate the number of features first.
+        # The last Linear layer should have an output dimension of out_classes.
+        # ====== YOUR CODE: ======
+        N = len(self.filters)
+        P = self.pool_every
+        w = in_w >> (N//P)
+        h = in_h >> (N//P)
+        in_features = w*h*self.filters[-1]
+        
+        for out_features in self.hidden_dims:
+            layers += [nn.Linear(in_features, out_features),
+                       nn.ReLU(inplace=True)]
+            in_features = out_features
+        layers += [nn.Linear(in_features, self.out_classes)]
+        # ========================
         seq = nn.Sequential(*layers)
         return seq
     # ========================
